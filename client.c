@@ -9,6 +9,7 @@
 #include <unistd.h>
 
 #define MAXLINE     4096    /* max text line length */
+// Tips: http://www.binarytides.com/hostname-to-ip-address-c-sockets-linux/
 
 int
 main(int argc, char **argv)
