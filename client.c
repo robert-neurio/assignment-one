@@ -7,9 +7,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <netdb.h>
 
 #define MAXLINE     4096    /* max text line length */
-// Tips: http://www.binarytides.com/hostname-to-ip-address-c-sockets-linux/
+// Tips: https://en.wikipedia.org/wiki/Getaddrinfo
 
 int
 main(int argc, char **argv)
@@ -18,6 +19,9 @@ main(int argc, char **argv)
     char    recvline[MAXLINE + 1];
     struct sockaddr_in servaddr;
     int daytimePort = 1024;
+    int error;
+    struct addrinfo* result = NULL;
+    struct addrinfo* res = NULL;
 
     if (argc != 3) {
         printf("usage: client <IPaddress> <Port Number>\n");
@@ -31,7 +35,27 @@ main(int argc, char **argv)
 
     daytimePort = atoi(argv[2]);
 
-    printf("Dayime Port Number is: %d \n", daytimePort);
+    //printf("Dayime Port Number is: %d \n", daytimePort);
+
+    /* resolve the domain name into a list of addresses */
+    getaddrinfo(argv[1], NULL, NULL, &result);
+
+    /* loop over all returned results and do inverse lookup */
+    for (res = result; res != NULL; res = res->ai_next) {   
+        char hostname[MAXLINE];
+        error = getnameinfo(res->ai_addr, res->ai_addrlen, hostname, MAXLINE, NULL, 0, 0); 
+        if (error != 0) {
+            fprintf(stderr, "Error in getnameinfo: %s\n", gai_strerror(error));
+            continue;
+        }
+        if (*hostname != '\0'){
+            printf("Server Name: %s \n", hostname);
+            printf("IP Address: %s \n", argv[1]);
+            break;
+        }
+    }          
+    //Free Memory        
+    freeaddrinfo(result);
 
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
@@ -45,6 +69,8 @@ main(int argc, char **argv)
         printf("connect error\n");
         exit(1);
     }
+
+
 
     while ( (n = read(sockfd, recvline, MAXLINE)) > 0) {
         recvline[n] = 0;        /* null terminate */
@@ -60,4 +86,6 @@ main(int argc, char **argv)
 
     exit(0);
 }
+
+
 
