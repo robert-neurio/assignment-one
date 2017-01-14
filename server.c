@@ -22,8 +22,10 @@ main(int argc, char **argv)
     // Declare Varables
     int     listenfd, connfd;
     struct sockaddr_in servaddr;
+    struct sockaddr_in client_addr;
     char    buff[MAXLINE];
     time_t ticks;
+    socklen_t clen;
     // Set default port for daytime server to 1024
     int daytimePort = 1024;
 
@@ -37,7 +39,7 @@ main(int argc, char **argv)
     // Get port number set from command line arguments
     daytimePort = atoi(argv[1]);
 
-    printf("Dayime Port Number is: %d \n", daytimePort);
+    //printf("Dayime Port Number is: %d \n", daytimePort);
 
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
@@ -50,7 +52,28 @@ main(int argc, char **argv)
     listen(listenfd, LISTENQ);
 
     for ( ; ; ) {
-        connfd = accept(listenfd, (struct sockaddr *) NULL, NULL);
+        connfd = accept(listenfd, (struct sockaddr *) &client_addr, &clen);
+
+        struct sockaddr_in* pV4Addr = (struct sockaddr_in*)&client_addr;
+        struct in_addr ipAddr = pV4Addr->sin_addr;
+
+        char clientIpAddress[MAXLINE];
+        inet_ntop(AF_INET, &ipAddr, clientIpAddress, MAXLINE);
+        
+        printf("Client IP Address: %s \n", clientIpAddress);
+
+        /*struct hostent *he;
+        struct in_addr ipv4addr;
+        inet_pton(AF_INET, clientIpAddress, &ipv4addr);
+        he = gethostbyaddr(&ipv4addr, sizeof ipv4addr, AF_INET);
+        printf("Host name: %s\n", he->h_name);*/
+
+        char host[MAXLINE];
+
+        getnameinfo(&client_addr, sizeof client_addr, host, sizeof host, NULL, NULL, 0);
+        printf("Client Host Name: %s \n", host);
+
+        printf("Port is: %d\n", (int) ntohs(client_addr.sin_port));
 
         ticks = time(NULL);
         snprintf(buff, sizeof(buff), "Time: %.24s\r\n", ctime(&ticks));
