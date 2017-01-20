@@ -60,20 +60,14 @@ main(int argc, char **argv)
         char clientIpAddress[MAXLINE];
         inet_ntop(AF_INET, &ipAddr, clientIpAddress, MAXLINE);
         
-        printf("Client IP Address: %s \n", clientIpAddress);
-
-        /*struct hostent *he;
-        struct in_addr ipv4addr;
-        inet_pton(AF_INET, clientIpAddress, &ipv4addr);
-        he = gethostbyaddr(&ipv4addr, sizeof ipv4addr, AF_INET);
-        printf("Host name: %s\n", he->h_name);*/
+        printf("Sender IP Address: %s \n", clientIpAddress);
 
         char host[MAXLINE];
 
         getnameinfo(&client_addr, sizeof client_addr, host, sizeof host, NULL, NULL, 0);
-        printf("Client Host Name: %s \n", host);
+        printf("Sender Host Name: %s \n", host);
 
-        printf("Port is: %d\n", (int) ntohs(client_addr.sin_port));
+        printf("Sender Port is: %d\n", (int) ntohs(client_addr.sin_port));
 
         ticks = time(NULL);
         snprintf(buff, sizeof(buff), "Time: %.24s\r\n", ctime(&ticks));
