@@ -20,7 +20,7 @@ int
 main(int argc, char **argv)
 {
     // Declare Varables
-    int     listenfd, connfd;
+    int     listenfd, connfd, n;
     struct sockaddr_in servaddr;
     struct sockaddr_in client_addr;
     char    buff[MAXLINE];
@@ -32,7 +32,7 @@ main(int argc, char **argv)
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
 
     if (argc != 2) {
-        printf("usage: server <Port Number>\n");
+        printf("usage: tunnel <Port Number>\n");
         exit(1);
     }
 
@@ -65,15 +65,25 @@ main(int argc, char **argv)
         getnameinfo(&client_addr, sizeof client_addr, host, sizeof host, NULL, NULL, 0);
         printf("Sender Host Name: %s \n", host);
         printf("Sender IP Address: %s \n", clientIpAddress);
-
         printf("Sender Port is: %d\n", (int) ntohs(client_addr.sin_port));
 
-        ticks = time(NULL);
-        snprintf(buff, sizeof(buff), "Time: %.24s\r\n", ctime(&ticks));
-        write(connfd, buff, strlen(buff));
-        printf("Sending response: %s", buff);
+        n = read(connfd, buff, MAXLINE);
+        if (n < 0) {
+            printf("error in reading from socket");
+            exit(1);
+        }
+
+        printf("%s \n", buff);
+
+        n = write(connfd, buff, MAXLINE);
+        if (n < 0) {
+            printf("error in reading from socket");
+            exit(1);
+        }
 
         close(connfd);
+
+        printf("Sending response: %s \n", buff);
     }
 }
 

@@ -19,6 +19,8 @@ main(int argc, char **argv)
     char    recvline[MAXLINE + 1];
     char hostname[MAXLINE];
     char host[MAXLINE];
+    char tunnelname[MAXLINE];
+    char tunnel[MAXLINE];
     struct sockaddr_in servaddr;
     int daytimePort = 1024;
     int error;
@@ -36,9 +38,9 @@ main(int argc, char **argv)
         exit(1);
     }
 
-    daytimePort = atoi(argv[2]);
-
     if(argc == 3){
+        daytimePort = atoi(argv[2]);
+
         /* resolve the domain name into a list of addresses */
         getaddrinfo(argv[1], NULL, NULL, &result);
 
@@ -95,7 +97,41 @@ main(int argc, char **argv)
             exit(1);
         }
     } else {
+        daytimePort = atoi(argv[2]);
 
+        bzero(&servaddr, sizeof(servaddr));
+        servaddr.sin_family = AF_INET;
+        servaddr.sin_port = htons(daytimePort);  /* daytime server */
+        if (inet_pton(AF_INET, argv[1], &servaddr.sin_addr) <= 0) {
+            printf("inet_pton error for %s\n", argv[1]);
+            exit(1);
+        }
+
+        if (connect(sockfd, (struct sockaddr *) &servaddr, sizeof(servaddr)) < 0) {
+            printf("connect error\n");
+            exit(1);
+        }
+
+        char message[MAXLINE];
+
+        bzero(message, MAXLINE);
+
+        strcpy(message, argv[3]);
+        strcat(message, ":");
+        strcat(message, argv[4]);
+
+        //printf("%s \n", message);
+
+        if (write(sockfd, message, strlen(message)) < 0)
+            printf("error in writing on stream socket\n");
+
+        n = read(sockfd, recvline, MAXLINE);
+        if (n < 0) {
+            printf("error in reading from socket");
+            exit(1);
+        }
+        printf("%s \n", recvline);
+        close(sockfd);
     }
 
     exit(0);
