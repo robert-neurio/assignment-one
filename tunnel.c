@@ -24,11 +24,19 @@ main(int argc, char **argv)
     struct sockaddr_in servaddr;
     struct sockaddr_in client_addr;
     char    buff[MAXLINE];
-    char* server_address;
-    char* server_port;
+    char* server_address_temp;
+    char* server_port_temp;
+    char server_address[MAXLINE];
+    char server_port[MAXLINE];
+
     socklen_t clen;
     // Set default port for daytime server to 1024
     int daytimePort = 1024;
+    int daytimePortServer = 1024;
+    
+    int sockfd;
+    struct sockaddr_in daytime_servaddr;
+    char    recvline[MAXLINE + 1];
 
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -39,8 +47,6 @@ main(int argc, char **argv)
 
     // Get port number set from command line arguments
     daytimePort = atoi(argv[1]);
-
-    //printf("Dayime Port Number is: %d \n", daytimePort);
 
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
@@ -74,25 +80,45 @@ main(int argc, char **argv)
             exit(1);
         }
 
-        printf("%s \n", buff);
+        server_address_temp = strtok(buff, " ");
+        server_port_temp = strtok(NULL, " ");
 
-        server_address = strtok(buff, " ");
-        server_port = strtok(NULL, " ");
+        strcpy(server_address, server_address_temp);
+        strcpy(server_port, server_port_temp);
 
-        printf("%s \n", server_address);
-        printf("%s \n", server_port);
+        daytimePortServer = atoi(server_port);
 
-        n = write(connfd, buff, MAXLINE);
-        if (n < 0) {
-            printf("error in reading from socket");
+        if ( (sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+            printf("socket error\n");
             exit(1);
         }
 
-        printf("Sending response: %s \n", buff);
+        bzero(&daytime_servaddr, sizeof(daytime_servaddr));
+        daytime_servaddr.sin_family = AF_INET;
+        daytime_servaddr.sin_port = htons(daytimePortServer);  /* daytime server */
+        if (inet_pton(AF_INET, server_address, &daytime_servaddr.sin_addr) <= 0) {
+            printf("inet_pton error for %s\n", server_address);
+            exit(1);
+        }
 
-        close(connfd);
+        if (connect(sockfd, (struct sockaddr *) &daytime_servaddr, sizeof(daytime_servaddr)) < 0) {
+            printf("connect error\n");
+            exit(1);
+        }
 
-        
+        n = read(sockfd, recvline, MAXLINE);
+        if (n < 0) {
+            printf("error in reading from socket \n");
+            exit(1);
+        }
+        printf("Sending Response to Sender from Server: %s", recvline);
+
+        n = write(connfd, recvline, MAXLINE);
+        if (n < 0) {
+            printf("error in reading from socket \n");
+            exit(1);
+        }
+        close(connfd);  
     }
 }
 

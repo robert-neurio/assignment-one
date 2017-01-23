@@ -65,13 +65,12 @@ main(int argc, char **argv)
         getnameinfo(&client_addr, sizeof client_addr, host, sizeof host, NULL, NULL, 0);
         printf("Sender Host Name: %s \n", host);
         printf("Sender IP Address: %s \n", clientIpAddress);
-
         printf("Sender Port is: %d\n", (int) ntohs(client_addr.sin_port));
 
         ticks = time(NULL);
         snprintf(buff, sizeof(buff), "Time: %.24s\r\n", ctime(&ticks));
         write(connfd, buff, strlen(buff));
-        printf("Sending response: %s", buff);
+        printf("Sending response to Sender: %s", buff);
 
         close(connfd);
     }

@@ -38,9 +38,9 @@ main(int argc, char **argv)
         exit(1);
     }
 
-    if(argc == 3){
-        daytimePort = atoi(argv[2]);
+    daytimePort = atoi(argv[2]);
 
+    if(argc == 3){
         /* resolve the domain name into a list of addresses */
         getaddrinfo(argv[1], NULL, NULL, &result);
 
@@ -97,8 +97,6 @@ main(int argc, char **argv)
             exit(1);
         }
     } else {
-        daytimePort = atoi(argv[2]);
-
         bzero(&servaddr, sizeof(servaddr));
         servaddr.sin_family = AF_INET;
         servaddr.sin_port = htons(daytimePort);  /* daytime server */
@@ -120,8 +118,6 @@ main(int argc, char **argv)
         strcat(message, " ");
         strcat(message, argv[4]);
 
-        //printf("%s \n", message);
-
         if (write(sockfd, message, strlen(message)) < 0)
             printf("error in writing on stream socket\n");
 
@@ -130,12 +126,8 @@ main(int argc, char **argv)
             printf("error in reading from socket");
             exit(1);
         }
-        printf("%s \n", recvline);
+        printf("%s", recvline);
         close(sockfd);
     }
-
     exit(0);
 }
-
-
-
