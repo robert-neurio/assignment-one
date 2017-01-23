@@ -24,7 +24,8 @@ main(int argc, char **argv)
     struct sockaddr_in servaddr;
     struct sockaddr_in client_addr;
     char    buff[MAXLINE];
-    time_t ticks;
+    char* server_address;
+    char* server_port;
     socklen_t clen;
     // Set default port for daytime server to 1024
     int daytimePort = 1024;
@@ -75,15 +76,23 @@ main(int argc, char **argv)
 
         printf("%s \n", buff);
 
+        server_address = strtok(buff, " ");
+        server_port = strtok(NULL, " ");
+
+        printf("%s \n", server_address);
+        printf("%s \n", server_port);
+
         n = write(connfd, buff, MAXLINE);
         if (n < 0) {
             printf("error in reading from socket");
             exit(1);
         }
 
+        printf("Sending response: %s \n", buff);
+
         close(connfd);
 
-        printf("Sending response: %s \n", buff);
+        
     }
 }
 

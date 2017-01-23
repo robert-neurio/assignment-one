@@ -117,7 +117,7 @@ main(int argc, char **argv)
         bzero(message, MAXLINE);
 
         strcpy(message, argv[3]);
-        strcat(message, ":");
+        strcat(message, " ");
         strcat(message, argv[4]);
 
         //printf("%s \n", message);
