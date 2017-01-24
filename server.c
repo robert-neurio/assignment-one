@@ -16,6 +16,9 @@
 #include <stdlib.h>
 #include <linux/if_link.h>
 
+//Robert Tan
+//301006212
+
 int
 main(int argc, char **argv)
 {
@@ -29,8 +32,10 @@ main(int argc, char **argv)
     // Set default port for daytime server to 1024
     int daytimePort = 1024;
 
+    //Initialize socket for the Internet
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
 
+    //If there are not enough the right number of arguments, return error
     if (argc != 2) {
         printf("usage: server <Port Number>\n");
         exit(1);
@@ -50,6 +55,7 @@ main(int argc, char **argv)
     listen(listenfd, LISTENQ);
 
     for ( ; ; ) {
+        //Listen for connections
         connfd = accept(listenfd, (struct sockaddr *) &client_addr, &clen);
 
         struct sockaddr_in* pV4Addr = (struct sockaddr_in*)&client_addr;
@@ -60,13 +66,17 @@ main(int argc, char **argv)
         
         char host[MAXLINE];
 
+        //Prints Sender Info when there is a connection
         getnameinfo(&client_addr, sizeof client_addr, host, sizeof host, NULL, NULL, 0);
         printf("Sender Host Name: %s \n", host);
         printf("Sender IP Address: %s \n", clientIpAddress);
         printf("Sender Port is: %d\n", (int) ntohs(client_addr.sin_port));
 
+        //Gets the current time
         ticks = time(NULL);
         snprintf(buff, sizeof(buff), "Time: %.24s\r\n", ctime(&ticks));
+        
+        //Sends Time info to the sender
         write(connfd, buff, strlen(buff));
         printf("Sending response to Sender: %s", buff);
 

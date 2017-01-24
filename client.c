@@ -11,9 +11,13 @@
 
 #define MAXLINE     4096    /* max text line length */
 
+//Robert Tan
+//301006212
+
 int
 main(int argc, char **argv)
 {
+    //Declare Variables
     int     sockfd, n;
     char    recvline[MAXLINE + 1];
     char hostname[MAXLINE];
@@ -29,24 +33,28 @@ main(int argc, char **argv)
     char tunnelIPaddress[MAXLINE];
     char message[MAXLINE];
 
+    //If there are not enough the right number of arguments, return error
     if (argc != 3 && argc != 5) {
         printf("usage: client <Server IPaddress> <Server Port Number>\n");
         printf("usage: client <Tunnel IPaddress> <Tunnel Port Number> <Server IPaddress> <Server Port Number>\n");
         exit(1);
     }
 
+    //Initialize socket for the Internet
     if ( (sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         printf("socket error\n");
         exit(1);
     }
 
+    //Get port of the first server
     daytimePort = atoi(argv[2]);
 
+    //If user only gives server name and port
     if(argc == 3){
         /* resolve the domain name into a list of addresses */
         getaddrinfo(argv[1], NULL, NULL, &result);
 
-        /* loop over all returned results and return the last one */
+        /* loop over all returned results and return the last one in variables hostname and host*/
         for (res = result; res != NULL; res = res->ai_next) {   
             inet_ntop (res->ai_family, res->ai_addr->sa_data, host, MAXLINE);
             void *ptr;
@@ -70,12 +78,14 @@ main(int argc, char **argv)
                 strcpy(serverIPaddress, host);
             }
         }
+        //Print info about the server
         printf("Server Name: %s \n", servername);
         printf("IP Address: %s \n", serverIPaddress);
 
         //Free Memory        
         freeaddrinfo(result);
 
+        //Connect to server
         bzero(&servaddr, sizeof(servaddr));
         servaddr.sin_family = AF_INET;
         servaddr.sin_port = htons(daytimePort);  /* daytime server */
@@ -89,6 +99,7 @@ main(int argc, char **argv)
             exit(1);
         }
 
+        //Read time from server and prints it
         while ( (n = read(sockfd, recvline, MAXLINE)) > 0) {
             recvline[n] = 0;        /* null terminate */
             if (fputs(recvline, stdout) == EOF) {
@@ -100,7 +111,10 @@ main(int argc, char **argv)
             printf("read error\n");
             exit(1);
         }
+
+    //If user gives tunnel and server arguments    
     } else {
+        //Connect to the tunnel
         bzero(&servaddr, sizeof(servaddr));
         servaddr.sin_family = AF_INET;
         servaddr.sin_port = htons(daytimePort);  /* daytime server */
@@ -114,25 +128,29 @@ main(int argc, char **argv)
             exit(1);
         }
 
+        //Takes the 3rd and 4th arguments and concatenates them into a string, 
+        //seperating them with a space
         bzero(message, MAXLINE);
 
         strcpy(message, argv[3]);
         strcat(message, " ");
         strcat(message, argv[4]);
 
+        //Pass Server info to the Tunnel
         if (write(sockfd, message, strlen(message)) < 0)
             printf("error in writing on stream socket\n");
 
+        //Read Time given from the Tunnel and saves it in the recvline variables
         n = read(sockfd, recvline, MAXLINE);
         if (n < 0) {
             printf("error in reading from socket");
             exit(1);
         }
 
-        /* resolve the domain name into a list of addresses */
+        /* resolve the server domain name into a list of addresses */
         getaddrinfo(argv[3], NULL, NULL, &result);
 
-        /* loop over all returned results and return the last one */
+        /* loop over all returned results and return the last one in variables hostname and host */
         for (res = result; res != NULL; res = res->ai_next) {   
             inet_ntop (res->ai_family, res->ai_addr->sa_data, host, MAXLINE);
             void *ptr;
@@ -156,11 +174,13 @@ main(int argc, char **argv)
                 strcpy(serverIPaddress, host);
             }
         }
+        //Prints Server Info
         printf("Server Name: %s \n", servername);
         printf("IP Address: %s \n", serverIPaddress);
-
+        //Prints the Time returned from the Tunnel
         printf("%s \n", recvline);
 
+        /* resolve the tunnel domain name into a list of addresses */
         getaddrinfo(argv[1], NULL, NULL, &result);
 
         /* loop over all returned results and return the last one */
@@ -187,6 +207,7 @@ main(int argc, char **argv)
                 strcpy(tunnelIPaddress, host);
             }
         }
+        //Prints Tunnel Info
         printf("Via Tunnel: %s \n", tunnelname);
         printf("IP Address: %s \n", tunnelIPaddress);
         printf("Port Number: %s \n", argv[2]);
