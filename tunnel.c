@@ -31,7 +31,7 @@ main(int argc, char **argv)
 
     socklen_t clen;
     // Set default port for daytime server to 1024
-    int daytimePort = 1024;
+    int tunnelPort = 1024;
     int daytimePortServer = 1024;
     
     int sockfd;
@@ -46,13 +46,13 @@ main(int argc, char **argv)
     }
 
     // Get port number set from command line arguments
-    daytimePort = atoi(argv[1]);
+    tunnelPort = atoi(argv[1]);
 
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     // Set Daytime Server's Port Number
-    servaddr.sin_port = htons(daytimePort); /* daytime server */
+    servaddr.sin_port = htons(tunnelPort); /* tunnel server */
 
     bind(listenfd, (struct sockaddr *) &servaddr, sizeof(servaddr));
 

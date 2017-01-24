@@ -39,8 +39,6 @@ main(int argc, char **argv)
     // Get port number set from command line arguments
     daytimePort = atoi(argv[1]);
 
-    //printf("Dayime Port Number is: %d \n", daytimePort);
-
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);

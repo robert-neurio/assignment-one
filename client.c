@@ -129,7 +129,7 @@ main(int argc, char **argv)
             exit(1);
         }
 
-                /* resolve the domain name into a list of addresses */
+        /* resolve the domain name into a list of addresses */
         getaddrinfo(argv[3], NULL, NULL, &result);
 
         /* loop over all returned results and return the last one */
@@ -159,7 +159,7 @@ main(int argc, char **argv)
         printf("Server Name: %s \n", servername);
         printf("IP Address: %s \n", serverIPaddress);
 
-        printf("%s \n ", recvline);
+        printf("%s \n", recvline);
 
         getaddrinfo(argv[1], NULL, NULL, &result);
 
