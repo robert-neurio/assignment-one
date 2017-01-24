@@ -10,7 +10,6 @@
 #include <netdb.h>
 
 #define MAXLINE     4096    /* max text line length */
-// Tips: https://en.wikipedia.org/wiki/Getaddrinfo
 
 int
 main(int argc, char **argv)
@@ -19,13 +18,16 @@ main(int argc, char **argv)
     char    recvline[MAXLINE + 1];
     char hostname[MAXLINE];
     char host[MAXLINE];
-    char tunnelname[MAXLINE];
-    char tunnel[MAXLINE];
     struct sockaddr_in servaddr;
     int daytimePort = 1024;
     int error;
     struct addrinfo* result = NULL;
     struct addrinfo* res = NULL;
+    char servername[MAXLINE];
+    char serverIPaddress[MAXLINE];
+    char tunnelname[MAXLINE];
+    char tunnelIPaddress[MAXLINE];
+    char message[MAXLINE];
 
     if (argc != 3 && argc != 5) {
         printf("usage: client <Server IPaddress> <Server Port Number>\n");
@@ -44,7 +46,7 @@ main(int argc, char **argv)
         /* resolve the domain name into a list of addresses */
         getaddrinfo(argv[1], NULL, NULL, &result);
 
-        /* loop over all returned results and return the first one */
+        /* loop over all returned results and return the last one */
         for (res = result; res != NULL; res = res->ai_next) {   
             inet_ntop (res->ai_family, res->ai_addr->sa_data, host, MAXLINE);
             void *ptr;
@@ -54,7 +56,7 @@ main(int argc, char **argv)
                     break;
                 case AF_INET6:
                     ptr = &((struct sockaddr_in6 *) res->ai_addr)->sin6_addr;
-                break;
+                    break;
             }
             inet_ntop (res->ai_family, ptr, host, MAXLINE);
 
@@ -64,11 +66,13 @@ main(int argc, char **argv)
                 continue;
             }
             if (*hostname != '\0'){
-                printf("Server Name: %s \n", hostname);
-                printf("IP Address: %s \n", host);
-                break;
+                strcpy(servername, hostname);
+                strcpy(serverIPaddress, host);
             }
-        }          
+        }
+        printf("Server Name: %s \n", servername);
+        printf("IP Address: %s \n", serverIPaddress);
+
         //Free Memory        
         freeaddrinfo(result);
 
@@ -110,8 +114,6 @@ main(int argc, char **argv)
             exit(1);
         }
 
-        char message[MAXLINE];
-
         bzero(message, MAXLINE);
 
         strcpy(message, argv[3]);
@@ -126,7 +128,69 @@ main(int argc, char **argv)
             printf("error in reading from socket");
             exit(1);
         }
-        printf("%s", recvline);
+
+                /* resolve the domain name into a list of addresses */
+        getaddrinfo(argv[3], NULL, NULL, &result);
+
+        /* loop over all returned results and return the last one */
+        for (res = result; res != NULL; res = res->ai_next) {   
+            inet_ntop (res->ai_family, res->ai_addr->sa_data, host, MAXLINE);
+            void *ptr;
+            switch (res->ai_family){
+                case AF_INET:
+                    ptr = &((struct sockaddr_in *) res->ai_addr)->sin_addr;
+                    break;
+                case AF_INET6:
+                    ptr = &((struct sockaddr_in6 *) res->ai_addr)->sin6_addr;
+                    break;
+            }
+            inet_ntop (res->ai_family, ptr, host, MAXLINE);
+
+            error = getnameinfo(res->ai_addr, res->ai_addrlen, hostname, MAXLINE, NULL, 0, 0); 
+            if (error != 0) {
+                fprintf(stderr, "Error in getnameinfo: %s\n", gai_strerror(error));
+                continue;
+            }
+            if (*hostname != '\0'){
+                strcpy(servername, hostname);
+                strcpy(serverIPaddress, host);
+            }
+        }
+        printf("Server Name: %s \n", servername);
+        printf("IP Address: %s \n", serverIPaddress);
+
+        printf("%s \n ", recvline);
+
+        getaddrinfo(argv[1], NULL, NULL, &result);
+
+        /* loop over all returned results and return the last one */
+        for (res = result; res != NULL; res = res->ai_next) {   
+            inet_ntop (res->ai_family, res->ai_addr->sa_data, host, MAXLINE);
+            void *ptr;
+            switch (res->ai_family){
+                case AF_INET:
+                    ptr = &((struct sockaddr_in *) res->ai_addr)->sin_addr;
+                    break;
+                case AF_INET6:
+                    ptr = &((struct sockaddr_in6 *) res->ai_addr)->sin6_addr;
+                    break;
+            }
+            inet_ntop (res->ai_family, ptr, host, MAXLINE);
+
+            error = getnameinfo(res->ai_addr, res->ai_addrlen, hostname, MAXLINE, NULL, 0, 0); 
+            if (error != 0) {
+                fprintf(stderr, "Error in getnameinfo: %s\n", gai_strerror(error));
+                continue;
+            }
+            if (*hostname != '\0'){
+                strcpy(tunnelname, hostname);
+                strcpy(tunnelIPaddress, host);
+            }
+        }
+        printf("Via Tunnel: %s \n", tunnelname);
+        printf("IP Address: %s \n", tunnelIPaddress);
+        printf("Port Number: %s \n", argv[2]);
+
         close(sockfd);
     }
     exit(0);
